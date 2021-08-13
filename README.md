@@ -3,6 +3,8 @@
 ## Play Chrome's "No Internet" Dino Game using Computer Vision.
 
 [![.NET Core](https://github.com/TheBlackPlague/DynoSharp/actions/workflows/dotnet-core.yml/badge.svg?branch=main&event=push)](https://github.com/TheBlackPlague/DynoSharp/actions/workflows/dotnet-core.yml)
+[![CodeQL](https://github.com/TheBlackPlague/DynoSharp/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/TheBlackPlague/DynoSharp/actions/workflows/codeql-analysis.yml)
+[![Codacy Security Scan](https://github.com/TheBlackPlague/DynoSharp/actions/workflows/codacy-analysis.yml/badge.svg)](https://github.com/TheBlackPlague/DynoSharp/actions/workflows/codacy-analysis.yml)
 
 ---
 
