@@ -110,6 +110,7 @@ namespace DynoSharp
                 );
             
             CaptureSession = CaptureFramePool.CreateCaptureSession(CaptureItem);
+            CaptureSession.IsCursorCaptureEnabled = false;
             
             CaptureFramePool.FrameArrived += (sender, arguments) =>
             {
