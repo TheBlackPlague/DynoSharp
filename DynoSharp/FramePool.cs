@@ -74,7 +74,7 @@ namespace DynoSharp
                 Width = surfaceTexture.Description.Width,
                 MipLevels = 1,
                 SampleDescription = new SampleDescription(1, 0),
-                Usage = ResourceUsage.Staging
+                Usage = ResourceUsage.Staging // GPU -> CPU
             };
             Texture2D texture2DFrame = new Texture2D(device, description);
             device.ImmediateContext.CopyResource(surfaceTexture, texture2DFrame);
@@ -101,7 +101,8 @@ namespace DynoSharp
                 for (int i = from; i <= to; i++) {
                     IntPtr sourceIteratedPointer = IntPtr.Add(sourcePointer, sourceStride * i);
                     IntPtr destinationIteratedPointer = IntPtr.Add(destinationPointer, destinationStride * i);
-                                    
+                    
+                    // Memcpy is apparently faster than Buffer.MemoryCopy. 
                     Utilities.CopyMemory(destinationIteratedPointer, sourceIteratedPointer, destinationStride);
                 }
                 return;
@@ -112,6 +113,7 @@ namespace DynoSharp
                 IntPtr sourceIteratedPointer = IntPtr.Add(sourcePointer, sourceStride * i);
                 IntPtr destinationIteratedPointer = IntPtr.Add(destinationPointer, destinationStride * i);
                 
+                // Memcpy is apparently faster than Buffer.MemoryCopy. 
                 Utilities.CopyMemory(destinationIteratedPointer, sourceIteratedPointer, destinationStride);
             });
         }
@@ -121,13 +123,13 @@ namespace DynoSharp
             "DPA0003: Excessive memory allocations in LOH", 
             MessageId = "type: System.Byte[]"
             )]
-        private static (byte[]? frameBytes, int width, int height) GetLatestFrameAsByteBgra()
+        private static (byte[]? frameBytes, int width, int height, int stride) GetLatestFrameAsByteBgra()
         {
             Stopwatch watch = new Stopwatch();
             watch.Start();
             
             Texture2D? frame = GetLatestFrameAsTexture2D();
-            if (frame == null) return (null, 0, 0);
+            if (frame == null) return (null, 0, 0, 0);
             
             Device device = CaptureHandler.GraphicCaptureDevice();
 
@@ -157,13 +159,13 @@ namespace DynoSharp
                     */
                     
                     CopyMemory(
-                        true, // Copy memory in parallel.
-                        false,
-                        0,
-                        height,
-                        sourcePointer,
-                        destinationPointer,
-                        sourceStride,
+                        true, // Should run in parallel or not.
+                        false, 
+                        0, 
+                        height, 
+                        sourcePointer, 
+                        destinationPointer, 
+                        sourceStride, 
                         destinationStride
                         );
                 }
@@ -175,7 +177,7 @@ namespace DynoSharp
             watch.Stop();
             ByteArrayTime = watch.ElapsedMilliseconds;
             
-            return (frameBytes, width, height);
+            return (frameBytes, width, height, destinationStride);
         }
         
         public static (Mat?, int width, int height) GetLatestFrameAsMat()
@@ -183,7 +185,7 @@ namespace DynoSharp
             Stopwatch watch = new Stopwatch();
             watch.Start();
             
-            (byte[]? frameBytes, int width, int height) = GetLatestFrameAsByteBgra();
+            (byte[]? frameBytes, int width, int height, int stride) = GetLatestFrameAsByteBgra();
             if (frameBytes == null) return (null, 0, 0);
             
             /*
@@ -204,9 +206,9 @@ namespace DynoSharp
             }
             */
 
-            // 8UC4: 8 unsigned bits * 4 colors (BGRA)
-            Mat frameMat = new Mat(width, height, MatType.CV_8UC4, frameBytes);
-            
+            // 8UC4: 8 unsigned bits * 4 colors (BGRA), Padding: width * (4 bytes / pixel)
+            Mat frameMat = new Mat(height, width, MatType.CV_8UC4, frameBytes, stride);
+
             watch.Stop();
             MatTime = watch.ElapsedMilliseconds;
 
