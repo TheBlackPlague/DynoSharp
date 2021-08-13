@@ -1,7 +1,9 @@
 ﻿#nullable enable
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using System.Threading.Tasks;
 using Windows.Graphics.Capture;
 using DynoSharp.Interop;
 using OpenCvSharp;
@@ -83,6 +85,42 @@ namespace DynoSharp
             return texture2DFrame;
         }
 
+        private static void CopyMemory(
+            bool parallel,
+            bool orEqualTo,
+            int from, 
+            int to, 
+            IntPtr sourcePointer, 
+            IntPtr destinationPointer, 
+            int sourceStride, 
+            int destinationStride)
+        {
+            if (!orEqualTo) to--;
+
+            if (!parallel) {
+                for (int i = from; i <= to; i++) {
+                    IntPtr sourceIteratedPointer = IntPtr.Add(sourcePointer, sourceStride * i);
+                    IntPtr destinationIteratedPointer = IntPtr.Add(destinationPointer, destinationStride * i);
+                                    
+                    Utilities.CopyMemory(destinationIteratedPointer, sourceIteratedPointer, destinationStride);
+                }
+                return;
+            }
+
+            Parallel.For(from, to, i =>
+            {
+                IntPtr sourceIteratedPointer = IntPtr.Add(sourcePointer, sourceStride * i);
+                IntPtr destinationIteratedPointer = IntPtr.Add(destinationPointer, destinationStride * i);
+                
+                Utilities.CopyMemory(destinationIteratedPointer, sourceIteratedPointer, destinationStride);
+            });
+        }
+
+        [SuppressMessage(
+            "ReSharper.DPA", 
+            "DPA0003: Excessive memory allocations in LOH", 
+            MessageId = "type: System.Byte[]"
+            )]
         private static (byte[]? frameBytes, int width, int height) GetLatestFrameAsByteBgra()
         {
             Stopwatch watch = new Stopwatch();
@@ -96,25 +134,38 @@ namespace DynoSharp
             DataBox mappedMemory = 
                 device.ImmediateContext.MapSubresource(frame, 0, MapMode.Read, MapFlags.None);
 
-            IntPtr sourcePointer = mappedMemory.DataPointer;
-            int sourceStride = mappedMemory.RowPitch;
-            
             int width = frame.Description.Width;
             int height = frame.Description.Height;
+            
+            IntPtr sourcePointer = mappedMemory.DataPointer;
+            int sourceStride = mappedMemory.RowPitch;
+            int destinationStride = width * 4;
 
-            byte[] frameBytes = new byte[width * height * 4]; // 4 bytes / pixel
+            byte[] frameBytes = new byte[width * height * 4]; // 4 bytes / pixel (High Mem. Allocation)
 
             unsafe {
                 fixed (byte* frameBytesPointer = frameBytes) {
                     IntPtr destinationPointer = (IntPtr)frameBytesPointer;
-                    int destinationStride = width * 4;
-
+                    
+                    /*
                     for (int i = 0; i < height; i++) {
                         Utilities.CopyMemory(destinationPointer, sourcePointer, destinationStride);
 
                         sourcePointer = IntPtr.Add(sourcePointer, sourceStride);
                         destinationPointer = IntPtr.Add(destinationPointer, destinationStride);
                     }
+                    */
+                    
+                    CopyMemory(
+                        true, // Copy memory in parallel.
+                        false,
+                        0,
+                        height,
+                        sourcePointer,
+                        destinationPointer,
+                        sourceStride,
+                        destinationStride
+                        );
                 }
             }
             

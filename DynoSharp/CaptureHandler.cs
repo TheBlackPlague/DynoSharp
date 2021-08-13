@@ -155,8 +155,7 @@ namespace DynoSharp
             IGraphicsCaptureItemInterop interop = (IGraphicsCaptureItemInterop)factory;
             Type graphicsCaptureItemInterface = typeof(GraphicsCaptureItem).GetInterface("IGraphicsCaptureItem") ??
                                                 throw new InvalidCastException();
-            IntPtr pointer = interop.CreateForWindow(highlightedWindow,
-                graphicsCaptureItemInterface.GUID);
+            IntPtr pointer = interop.CreateForWindow(highlightedWindow, graphicsCaptureItemInterface.GUID);
             GraphicsCaptureItem capture = Marshal.GetObjectForIUnknown(pointer) as GraphicsCaptureItem ?? 
                                           throw new InvalidCastException();
             Marshal.Release(pointer);
