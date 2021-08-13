@@ -2,6 +2,8 @@
 
 ## Play Chrome's "No Internet" Dino Game using Computer Vision.
 
+[![.NET Core](https://github.com/TheBlackPlague/DynoSharp/actions/workflows/dotnet-core.yml/badge.svg?branch=main&event=push)](https://github.com/TheBlackPlague/DynoSharp/actions/workflows/dotnet-core.yml)
+
 ---
 
 **Disclaimer:**
