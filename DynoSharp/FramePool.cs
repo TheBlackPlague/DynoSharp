@@ -87,7 +87,6 @@ namespace DynoSharp
 
         private static void CopyMemory(
             bool parallel,
-            bool orEqualTo,
             int from, 
             int to, 
             IntPtr sourcePointer, 
@@ -95,10 +94,8 @@ namespace DynoSharp
             int sourceStride, 
             int destinationStride)
         {
-            if (!orEqualTo) to--;
-
             if (!parallel) {
-                for (int i = from; i <= to; i++) {
+                for (int i = from; i < to; i++) {
                     IntPtr sourceIteratedPointer = IntPtr.Add(sourcePointer, sourceStride * i);
                     IntPtr destinationIteratedPointer = IntPtr.Add(destinationPointer, destinationStride * i);
                     
@@ -160,7 +157,6 @@ namespace DynoSharp
                     
                     CopyMemory(
                         true, // Should run in parallel or not.
-                        false, 
                         0, 
                         height, 
                         sourcePointer, 
