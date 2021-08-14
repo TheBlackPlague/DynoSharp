@@ -15,7 +15,6 @@ namespace DynoSharp
         private const double MAX_NORMALIZED_VALUE = 1.0;
         private const double JUMP_RATIO = 0.25;
         
-        
         // public const int 
         //     CV_8UC1 = 0,
         //     CV_8SC1 = 1,
@@ -159,7 +158,6 @@ namespace DynoSharp
                     );
                 
                 while (true) {
-                
                     OpenCV.MinMaxLoc(
                         matchingTemplates[i].Item2, 
                         out _, 
