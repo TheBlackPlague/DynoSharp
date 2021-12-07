@@ -11,7 +11,7 @@
     <ItemGroup>
       <PackageReference Include="InputSimulatorStandard" Version="1.0.0" />
       <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" />
-      <PackageReference Include="OpenCvSharp4.Windows" Version="4.5.3.20210725" />
+      <PackageReference Include="OpenCvSharp4.Windows" Version="4.5.3.20211207" />
       <PackageReference Include="SharpDX" Version="4.2.0" />
       <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
     </ItemGroup>
